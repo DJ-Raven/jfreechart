@@ -58,6 +58,8 @@ public class Demo extends JFrame {
         range.setLowerMargin(0.15);
         domain.setUpperMargin(0.1);
 
+        plot.setDomainPannable(true);
+
         XYBezierRenderer renderer = new XYBezierRenderer(10, 25);
         initSeriesStyle(renderer, 0, new Color(37, 148, 107));
         initSeriesStyle(renderer, 1, new Color(37, 93, 148));
@@ -84,6 +86,7 @@ public class Demo extends JFrame {
         ChartPanel chartPanel = new ChartPanel(chart, false);
         chartPanel.setFillZoomRectangle(true);
         chartPanel.setMouseWheelEnabled(true);
+        chartPanel.setRangeZoomable(false);
         chartPanel.addOverlay(createXCrosshair(chartPanel));
         return chartPanel;
     }

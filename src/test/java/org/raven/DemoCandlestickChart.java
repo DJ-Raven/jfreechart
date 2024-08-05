@@ -53,6 +53,9 @@ public class DemoCandlestickChart extends JFrame {
         range.setAutoRangeIncludesZero(false);
         range.setLowerMargin(0.15);
         domain.setUpperMargin(0.1);
+
+        plot.setDomainPannable(true);
+
         CandlestickRenderer renderer = new CustomCandlestickRenderer();
 
         renderer.setDownPaint(new Color(241, 89, 89));
@@ -70,6 +73,7 @@ public class DemoCandlestickChart extends JFrame {
         ChartPanel chartPanel = new ChartPanel(chart, false);
         chartPanel.setFillZoomRectangle(false);
         chartPanel.setMouseWheelEnabled(true);
+        chartPanel.setRangeZoomable(false);
         chartPanel.addOverlay(createXCrosshair(chartPanel, dataset));
         return chartPanel;
     }
