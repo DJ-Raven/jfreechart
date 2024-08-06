@@ -2,6 +2,8 @@ package org.raven.data;
 
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.general.PieDataset;
 import org.jfree.data.time.Month;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -402,6 +404,17 @@ public class SampleData {
         dataset.addValue(120.2, series4, product2);
         dataset.addValue(80.8, series4, product3);
         dataset.addValue(165.7, series4, product4);
+
+        return dataset;
+    }
+
+    public static PieDataset createPieDataset() {
+        DefaultPieDataset dataset = new DefaultPieDataset();
+
+        dataset.setValue("Laptop", 30);
+        dataset.setValue("Smartphone", 25);
+        dataset.setValue("Tablet", 10);
+        dataset.setValue("Smartwatch", 25);
 
         return dataset;
     }
