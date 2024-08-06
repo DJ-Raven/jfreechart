@@ -1,5 +1,7 @@
 package org.raven.data;
 
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.time.Month;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -358,6 +360,49 @@ public class SampleData {
         TimeSeriesCollection dataset = new TimeSeriesCollection();
         dataset.addSeries(s1);
         dataset.addSeries(s2);
+        return dataset;
+    }
+
+    public static CategoryDataset getCategoryDataset() {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+        // Product names
+        String product1 = "Laptop";
+        String product2 = "Smartphone";
+        String product3 = "Tablet";
+        String product4 = "Smartwatch";
+
+        // SeriesKey
+
+        String series1 = "Sales";
+        String series2 = "Revenue";
+        String series3 = "Profit";
+        String series4 = "Customer Satisfaction";
+
+        // Series 1: Sales
+        dataset.addValue(100.0, series1, product1);
+        dataset.addValue(120.0, series1, product2);
+        dataset.addValue(140.0, series1, product3);
+        dataset.addValue(160.0, series1, product4);
+
+        // Series 2: Revenue
+        dataset.addValue(200.0, series2, product1);
+        dataset.addValue(220.0, series2, product2);
+        dataset.addValue(240.0, series2, product3);
+        dataset.addValue(260.0, series2, product4);
+
+        // Series 3: Profit
+        dataset.addValue(80.0, series3, product1);
+        dataset.addValue(90.0, series3, product2);
+        dataset.addValue(100.0, series3, product3);
+        dataset.addValue(110.0, series3, product4);
+
+        // Series 4: Customer Satisfaction
+        dataset.addValue(200.5, series4, product1);
+        dataset.addValue(120.2, series4, product2);
+        dataset.addValue(80.8, series4, product3);
+        dataset.addValue(165.7, series4, product4);
+
         return dataset;
     }
 }
