@@ -1,7 +1,10 @@
 package org.raven;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
+import com.formdev.flatlaf.util.ColorFunctions;
 import net.miginfocom.swing.MigLayout;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -16,6 +19,7 @@ import org.raven.utils.ThemesUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 
 public class PieChartDemo extends JFrame {
 
@@ -37,18 +41,21 @@ public class PieChartDemo extends JFrame {
                 false);
 
         Color foreground = UIManager.getColor("Label.foreground");
+        Color borderColor = UIManager.getColor("Component.borderColor");
+        Color line = UIManager.getColor("Separator.foreground");
         PiePlot plot = (PiePlot) chart.getPlot();
         plot.setSectionPaint("Laptop", Color.decode("#fb7185"));
         plot.setSectionPaint("Smartphone", Color.decode("#60a5fa"));
         plot.setSectionPaint("Tablet", Color.decode("#2dd4bf"));
         plot.setSectionPaint("Smartwatch", Color.decode("#fb923c"));
         plot.setLabelPaint(foreground);
-        plot.setLabelBackgroundPaint(new Color(234, 234, 234));
+        plot.setLabelBackgroundPaint(UIManager.getColor("Button.background"));
         plot.setLabelLinkStyle(PieLabelLinkStyle.STANDARD);
-        plot.setLabelLinkPaint(new Color(130, 130, 130));
-        plot.setLabelOutlinePaint(null);
+        plot.setLabelLinkPaint(FlatLaf.isLafDark() ? ColorFunctions.tint(line, 0.5f) : ColorFunctions.shade(line, 0.3f));
+        plot.setLabelOutlinePaint(borderColor);
         plot.setLabelPadding(new RectangleInsets(5, 5, 5, 5));
         plot.setExplodePercent("Tablet", 0.2);
+        plot.setLegendItemShape(new Ellipse2D.Float(0, 0, 12, 12));
         plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0} ({1}, {2})"));
         plot.setToolTipGenerator(null);
         plot.setSectionOutlinesVisible(false);
