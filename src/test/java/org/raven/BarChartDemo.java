@@ -6,16 +6,21 @@ import net.miginfocom.swing.MigLayout;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.CategoryTextAnnotation;
+import org.jfree.chart.axis.CategoryAnchor;
 import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.chart.entity.ChartEntity;
+import org.jfree.chart.labels.ItemLabelAnchor;
+import org.jfree.chart.labels.ItemLabelPosition;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.chart.swing.ChartMouseEvent;
 import org.jfree.chart.swing.ChartMouseListener;
 import org.jfree.chart.swing.ChartPanel;
+import org.jfree.chart.text.TextAnchor;
 import org.jfree.data.category.CategoryDataset;
 import org.raven.data.SampleData;
+import org.raven.utils.CompositeCategoryTextAnnotation;
 import org.raven.utils.ThemesUtils;
 import org.raven.utils.Utils;
 
@@ -54,7 +59,6 @@ public class BarChartDemo extends JFrame {
         renderer.setMaximumBarWidth(0.02);
         renderer.setDefaultItemLabelPaint(foreground);
         renderer.setDefaultToolTipGenerator(null);
-
         plot.setRenderer(renderer);
         return chart;
     }
@@ -94,27 +98,48 @@ public class BarChartDemo extends JFrame {
                 ChartEntity entity = event.getEntity();
                 if (entity instanceof CategoryItemEntity) {
                     CategoryItemEntity categoryEntity = (CategoryItemEntity) entity;
-                    String category = categoryEntity.getColumnKey().toString();
-                    double value = categoryEntity.getDataset().getValue(categoryEntity.getRowKey(), categoryEntity.getColumnKey()).doubleValue();
-                    String text = String.format("%s: %.2f", categoryEntity.getRowKey().toString(), value);
-                    annotation = initAnnotation(text, category, value);
+
+                    annotation = initAnnotation(getValues(categoryEntity));
                 }
             }
 
-            private CategoryTextAnnotation annotation;
+            private CompositeCategoryTextAnnotation.Value[] getValues(CategoryItemEntity entity) {
+                CategoryDataset dataset = entity.getDataset();
+                int count = dataset.getRowCount();
+                CompositeCategoryTextAnnotation.Value[] values = new CompositeCategoryTextAnnotation.Value[count];
+                for (int i = 0; i < count; i++) {
+                    Comparable row = dataset.getRowKey(i);
+                    Comparable category = entity.getColumnKey();
+                    double value = dataset.getValue(row, category).doubleValue();
+                    String text = String.format("%s: %.2f", row.toString(), value);
+                    values[i] = new CompositeCategoryTextAnnotation.Value(text, category.toString(), value);
+                }
+                return values;
+            }
 
-            private CategoryTextAnnotation initAnnotation(String text, Comparable category, double value) {
+            private CompositeCategoryTextAnnotation annotation;
+
+            private CompositeCategoryTextAnnotation initAnnotation(CompositeCategoryTextAnnotation.Value[] values) {
                 if (annotation == null) {
-                    annotation = new CategoryTextAnnotation(text, category, value);
-                    annotation.setFont(UIManager.getFont("Label.font"));
-                    annotation.setPaint(UIManager.getColor("Label.foreground"));
+                    CategoryTextAnnotation[] annotations = new CategoryTextAnnotation[values.length - 1];
+                    for (int i = 0; i < annotations.length; i++) {
+                        annotations[i] = new CategoryTextAnnotation(values[i + 1].getText(), values[i + 1].getCategory(), values[i + 1].getValue());
+                        applyAnnotationStyle(annotations[i]);
+                    }
+                    annotation = new CompositeCategoryTextAnnotation(values, annotations);
+                    applyAnnotationStyle(annotation);
                     plot.addAnnotation(annotation);
                 } else {
-                    annotation.setText(text);
-                    annotation.setCategory(category);
-                    annotation.setValue(value);
+                    annotation.setValue(values);
                 }
                 return annotation;
+            }
+
+            private void applyAnnotationStyle(CategoryTextAnnotation annotation) {
+                annotation.setFont(UIManager.getFont("Label.font"));
+                annotation.setPaint(UIManager.getColor("Label.foreground"));
+                annotation.setTextAnchor(TextAnchor.BASELINE_LEFT);
+                annotation.setCategoryAnchor(CategoryAnchor.START);
             }
         });
     }
