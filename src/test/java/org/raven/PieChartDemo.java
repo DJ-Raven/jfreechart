@@ -1,7 +1,6 @@
 package org.raven;
 
 import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 import com.formdev.flatlaf.util.ColorFunctions;
@@ -15,7 +14,6 @@ import org.jfree.chart.plot.pie.PiePlot;
 import org.jfree.chart.swing.ChartPanel;
 import org.jfree.data.general.PieDataset;
 import org.raven.data.SampleData;
-import org.raven.utils.ThemesUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,11 +22,7 @@ import java.awt.geom.Ellipse2D;
 public class PieChartDemo extends JFrame {
 
     public PieChartDemo() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(new Dimension(800, 500));
-        setLocationRelativeTo(null);
         setLayout(new MigLayout("al center center"));
-        ThemesUtils.initThemes();
         add(createChartPanel());
     }
 
@@ -72,7 +66,7 @@ public class PieChartDemo extends JFrame {
 
     public static void main(String[] args) {
         FlatRobotoFont.install();
-        FlatIntelliJLaf.setup();
+        FlatDarculaLaf.setup();
         UIManager.put("defaultFont", new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 13));
         EventQueue.invokeLater(() -> new PieChartDemo().setVisible(true));
     }

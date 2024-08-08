@@ -22,7 +22,6 @@ import org.jfree.data.xy.XYDataset;
 import org.raven.data.SampleData;
 import org.raven.utils.CustomCrosshairToolTip;
 import org.raven.utils.lebel.DateCrosshairLabelGenerator;
-import org.raven.utils.ThemesUtils;
 import org.raven.utils.Utils;
 
 import javax.swing.*;
@@ -32,14 +31,10 @@ import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 
-public class Demo extends JFrame {
+public class Demo extends DemoFrame {
 
     public Demo() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(new Dimension(800, 400));
-        setLocationRelativeTo(null);
         setLayout(new MigLayout("al center center"));
-        ThemesUtils.initThemes();
         add(createChartPanel());
     }
 

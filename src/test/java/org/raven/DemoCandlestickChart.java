@@ -20,7 +20,6 @@ import org.raven.data.SampleData;
 import org.raven.renderer.CustomCandlestickRenderer;
 import org.raven.utils.CustomCrosshairToolTip;
 import org.raven.utils.lebel.DateCrosshairLabelGenerator;
-import org.raven.utils.ThemesUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,11 +30,7 @@ import java.text.SimpleDateFormat;
 public class DemoCandlestickChart extends JFrame {
 
     public DemoCandlestickChart() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(new Dimension(800, 400));
-        setLocationRelativeTo(null);
         setLayout(new MigLayout("al center center"));
-        ThemesUtils.initThemes();
         add(createChartPanel());
     }
 

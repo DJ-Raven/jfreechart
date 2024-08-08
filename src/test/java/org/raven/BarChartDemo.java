@@ -9,8 +9,6 @@ import org.jfree.chart.annotations.CategoryTextAnnotation;
 import org.jfree.chart.axis.CategoryAnchor;
 import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.chart.entity.ChartEntity;
-import org.jfree.chart.labels.ItemLabelAnchor;
-import org.jfree.chart.labels.ItemLabelPosition;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.StandardBarPainter;
@@ -21,7 +19,6 @@ import org.jfree.chart.text.TextAnchor;
 import org.jfree.data.category.CategoryDataset;
 import org.raven.data.SampleData;
 import org.raven.utils.CompositeCategoryTextAnnotation;
-import org.raven.utils.ThemesUtils;
 import org.raven.utils.Utils;
 
 import javax.swing.*;
@@ -30,11 +27,7 @@ import java.awt.*;
 public class BarChartDemo extends JFrame {
 
     public BarChartDemo() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(new Dimension(800, 400));
-        setLocationRelativeTo(null);
         setLayout(new MigLayout("al center center"));
-        ThemesUtils.initThemes();
         add(createChartPanel());
     }
 
