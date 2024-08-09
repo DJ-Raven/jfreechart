@@ -24,7 +24,7 @@ import org.raven.utils.Utils;
 import javax.swing.*;
 import java.awt.*;
 
-public class BarChartDemo extends JFrame {
+public class BarChartDemo extends DemoFrame {
 
     public BarChartDemo() {
         setLayout(new MigLayout("al center center"));

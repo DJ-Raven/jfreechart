@@ -27,7 +27,7 @@ import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 
-public class DemoCandlestickChart extends JFrame {
+public class DemoCandlestickChart extends DemoFrame {
 
     public DemoCandlestickChart() {
         setLayout(new MigLayout("al center center"));

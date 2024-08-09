@@ -19,7 +19,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 
-public class PieChartDemo extends JFrame {
+public class PieChartDemo extends DemoFrame {
 
     public PieChartDemo() {
         setLayout(new MigLayout("al center center"));
