@@ -2,6 +2,7 @@ package org.raven.utils;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.StandardChartTheme;
+import org.raven.utils.paint.FlatColorPaint;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,9 +16,9 @@ public class ThemesUtils {
         StandardChartTheme theme = new StandardChartTheme("JFree/Shadow", true);
 
         // init value
-        Color background = UIManager.getColor("Panel.background");
-        Color foreground = UIManager.getColor("Label.foreground");
-        Color border = UIManager.getColor("Component.borderColor");
+        FlatColorPaint background = new FlatColorPaint("Panel.background");
+        FlatColorPaint foreground = new FlatColorPaint("Label.foreground");
+        FlatColorPaint border = new FlatColorPaint("Component.borderColor");
         Font font = UIManager.getFont("Label.font");
 
         // chart

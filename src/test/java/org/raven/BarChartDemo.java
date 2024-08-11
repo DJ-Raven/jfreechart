@@ -1,6 +1,6 @@
 package org.raven;
 
-import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 import net.miginfocom.swing.MigLayout;
 import org.jfree.chart.ChartFactory;
@@ -20,6 +20,7 @@ import org.jfree.data.category.CategoryDataset;
 import org.raven.data.SampleData;
 import org.raven.utils.CompositeCategoryTextAnnotation;
 import org.raven.utils.Utils;
+import org.raven.utils.paint.FlatColorPaint;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,7 +39,7 @@ public class BarChartDemo extends DemoFrame {
                 null,                                       // y-axis label
                 dataset);
 
-        Color foreground = UIManager.getColor("Label.foreground");
+        FlatColorPaint foreground = new FlatColorPaint("Label.foreground");
         CategoryPlot plot = (CategoryPlot) chart.getPlot();
         plot.setRangePannable(true);
 
@@ -58,7 +59,7 @@ public class BarChartDemo extends DemoFrame {
 
     private void initSeriesStyle(BarRenderer renderer, int series, Color color) {
         renderer.setSeriesPaint(series, createGradient(Utils.alphaColor(color, 0.7f)));
-        renderer.setSeriesOutlinePaint(series, color);
+        renderer.setSeriesOutlinePaint(series, Utils.alphaColor(color, 0.7f));
         renderer.setDrawBarOutline(true);
     }
 
@@ -129,8 +130,9 @@ public class BarChartDemo extends DemoFrame {
             }
 
             private void applyAnnotationStyle(CategoryTextAnnotation annotation) {
+                FlatColorPaint foreground = new FlatColorPaint("Label.foreground");
                 annotation.setFont(UIManager.getFont("Label.font"));
-                annotation.setPaint(UIManager.getColor("Label.foreground"));
+                annotation.setPaint(foreground);
                 annotation.setTextAnchor(TextAnchor.BASELINE_LEFT);
                 annotation.setCategoryAnchor(CategoryAnchor.START);
             }
@@ -140,7 +142,7 @@ public class BarChartDemo extends DemoFrame {
 
     public static void main(String[] args) {
         FlatRobotoFont.install();
-        FlatIntelliJLaf.setup();
+        FlatDarculaLaf.setup();
         UIManager.put("defaultFont", new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 13));
         EventQueue.invokeLater(() -> new BarChartDemo().setVisible(true));
     }

@@ -1,9 +1,7 @@
 package org.raven;
 
 import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
-import com.formdev.flatlaf.util.ColorFunctions;
 import net.miginfocom.swing.MigLayout;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -14,6 +12,7 @@ import org.jfree.chart.plot.pie.PiePlot;
 import org.jfree.chart.swing.ChartPanel;
 import org.jfree.data.general.PieDataset;
 import org.raven.data.SampleData;
+import org.raven.utils.paint.FlatColorPaint;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,18 +33,18 @@ public class PieChartDemo extends DemoFrame {
                 true,
                 false);
 
-        Color foreground = UIManager.getColor("Label.foreground");
-        Color borderColor = UIManager.getColor("Component.borderColor");
-        Color line = UIManager.getColor("Separator.foreground");
+        FlatColorPaint foreground = new FlatColorPaint("Label.foreground");
+        FlatColorPaint borderColor = new FlatColorPaint("Component.borderColor");
+        FlatColorPaint labelBackground = new FlatColorPaint("Button.background");
         PiePlot plot = (PiePlot) chart.getPlot();
         plot.setSectionPaint("Laptop", Color.decode("#fb7185"));
         plot.setSectionPaint("Smartphone", Color.decode("#60a5fa"));
         plot.setSectionPaint("Tablet", Color.decode("#2dd4bf"));
         plot.setSectionPaint("Smartwatch", Color.decode("#fb923c"));
         plot.setLabelPaint(foreground);
-        plot.setLabelBackgroundPaint(UIManager.getColor("Button.background"));
+        plot.setLabelBackgroundPaint(labelBackground);
         plot.setLabelLinkStyle(PieLabelLinkStyle.STANDARD);
-        plot.setLabelLinkPaint(FlatLaf.isLafDark() ? ColorFunctions.tint(line, 0.5f) : ColorFunctions.shade(line, 0.3f));
+        plot.setLabelLinkPaint(foreground.alpha(0.5f));
         plot.setLabelOutlinePaint(borderColor);
         plot.setLabelPadding(new RectangleInsets(5, 5, 5, 5));
         plot.setExplodePercent("Tablet", 0.2);
