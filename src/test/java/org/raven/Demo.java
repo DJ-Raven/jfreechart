@@ -54,8 +54,7 @@ public class Demo extends DemoFrame {
         domain.setUpperMargin(0.1);
 
         plot.setDomainPannable(true);
-
-        XYBezierRenderer renderer = new XYBezierRenderer(10, 25);
+        XYBezierRenderer renderer = new XYBezierRenderer(1, 25, XYBezierRenderer.FillType.TO_ZERO);
         initSeriesStyle(renderer, 0, new Color(37, 148, 107));
         initSeriesStyle(renderer, 1, new Color(37, 93, 148));
 
@@ -67,13 +66,17 @@ public class Demo extends DemoFrame {
     private void initSeriesStyle(XYBezierRenderer renderer, int series, Color color) {
         renderer.setSeriesPaint(series, color);
         renderer.setSeriesStroke(series, new BasicStroke(2.5f));
-        renderer.setSeriesShape(series, new Ellipse2D.Float(-4, -4, 8, 8));
+        renderer.setSeriesShape(series, new Ellipse2D.Float(-5, -5, 10, 10));
         renderer.setSeriesFillPaint(series, createGradient(color));
+        renderer.setSeriesOutlinePaint(series, new Color(255, 255, 255, 180));
+        renderer.setSeriesOutlineStroke(series, new BasicStroke(2f));
+        renderer.setUseOutlinePaint(true);
     }
 
     private Paint createGradient(Color color) {
+        Color startColor = Utils.alphaColor(color, 0.5f);
         Color endColor = Utils.alphaColor(color, 0);
-        return new GradientPaint(0f, 0f, color, 0f, 1f, endColor);
+        return new GradientPaint(0f, 0f, startColor, 0f, 1f, endColor);
     }
 
     private JPanel createChartPanel() {
