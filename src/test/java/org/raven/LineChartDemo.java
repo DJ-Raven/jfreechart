@@ -18,7 +18,7 @@ import org.jfree.data.xy.XYDataset;
 import org.raven.data.SampleData;
 import org.raven.utils.Utils;
 import org.raven.utils.paint.FlatColorPaint;
-import org.raven.utils.paint.MultiXYTextAnnotation;
+import org.raven.utils.MultiXYTextAnnotation;
 
 import javax.swing.*;
 import java.awt.*;

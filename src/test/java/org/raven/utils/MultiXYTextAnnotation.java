@@ -1,4 +1,4 @@
-package org.raven.utils.paint;
+package org.raven.utils;
 
 import org.jfree.chart.annotations.AbstractXYAnnotation;
 import org.jfree.chart.annotations.XYTextAnnotation;
