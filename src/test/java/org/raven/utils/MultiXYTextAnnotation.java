@@ -236,15 +236,11 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
     public void draw(Graphics2D g2, XYPlot plot, Rectangle2D dataArea, ValueAxis domainAxis, ValueAxis rangeAxis, int rendererIndex, PlotRenderingInfo info) {
         if (labels != null) {
             PlotOrientation orientation = plot.getOrientation();
-            RectangleEdge domainEdge = Plot.resolveDomainAxisLocation(
-                    plot.getDomainAxisLocation(), orientation);
-            RectangleEdge rangeEdge = Plot.resolveRangeAxisLocation(
-                    plot.getRangeAxisLocation(), orientation);
+            RectangleEdge domainEdge = Plot.resolveDomainAxisLocation(plot.getDomainAxisLocation(), orientation);
+            RectangleEdge rangeEdge = Plot.resolveRangeAxisLocation(plot.getRangeAxisLocation(), orientation);
 
-            float anchorX = (float) domainAxis.valueToJava2D(
-                    this.getX(), dataArea, domainEdge);
-            float anchorY = (float) rangeAxis.valueToJava2D(
-                    this.getY(), dataArea, rangeEdge);
+            float anchorX = (float) domainAxis.valueToJava2D(this.getX(), dataArea, domainEdge);
+            float anchorY = (float) rangeAxis.valueToJava2D(this.getY(), dataArea, rangeEdge);
 
             if (orientation == PlotOrientation.HORIZONTAL) {
                 float tempAnchor = anchorX;
@@ -252,8 +248,27 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
                 anchorY = tempAnchor;
             }
             g2.setFont(getFont());
-            Rectangle2D bgRec = getPadding().createOutsetRectangle(getBackgroundRectangle(g2, anchorX, anchorY));
-
+            Rectangle2D bgRec = getBackgroundRectangle(g2, anchorX, anchorY);
+            // adjust annotation
+            if (!dataArea.contains(bgRec)) {
+                int shadow = 5;
+                int space = 2;
+                double x = bgRec.getX();
+                double y = bgRec.getY();
+                double width = bgRec.getWidth();
+                double height = bgRec.getHeight();
+                if (x < dataArea.getX() + space) {
+                    x = dataArea.getX() + space;
+                } else if (x + width > dataArea.getX() + dataArea.getWidth() - shadow) {
+                    x = dataArea.getX() + dataArea.getWidth() - width - shadow;
+                }
+                if (y < dataArea.getY() + space) {
+                    y = dataArea.getY() + space;
+                } else if (y + height > dataArea.getY() + dataArea.getHeight() - shadow) {
+                    y = dataArea.getY() + dataArea.getHeight() - height - shadow;
+                }
+                bgRec = new Rectangle2D.Double(x, y, width, height);
+            }
             Shape shape = round > 0 ?
                     new RoundRectangle2D.Double(bgRec.getX(), bgRec.getY(), bgRec.getWidth(), bgRec.getHeight(), round, round) :
                     bgRec;
@@ -261,66 +276,64 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
                 g2.setPaint(getBackgroundPaint());
                 g2.fill(shape);
             }
-            float width = (float) (bgRec.getWidth() - getPadding().getLeft() - getPadding().getRight() - getSeriesSizeWidth());
-            anchorY += getVerticalTextGap();
-            for (int i = labels.length - 1; i >= 0; i--) {
+            float x = (float) (bgRec.getX() + getSeriesSizeWidth() + getPadding().getLeft());
+            float y = (float) (bgRec.getY() + getPadding().getTop());
+            float x2 = (float) (bgRec.getX() + bgRec.getWidth() - getPadding().getRight());
+            float seriesX = (float) (bgRec.getX() + getPadding().getLeft());
+            for (int i = 0; i < labels.length; i++) {
                 Label label = labels[i];
-                double size = drawLabel(g2, anchorX, anchorY, width, label);
-                drawSeries(g2, anchorX, anchorY, (float) size, i, plot.getRenderer().getSeriesPaint(i));
-                anchorY -= size + getVerticalTextGap();
+                float size = (float) drawLabel(g2, x, y, x2, label);
+                drawSeries(g2, seriesX, y, size, plot.getRenderer().getSeriesPaint(i));
+                y += size + getVerticalTextGap();
             }
             if (isOutlineVisible()) {
                 g2.setStroke(getOutlineStroke());
                 g2.setPaint(getOutlinePaint());
                 g2.draw(shape);
             }
+            String toolTip = getToolTipText();
+            String url = getURL();
+            if (toolTip != null || url != null) {
+                addEntity(info, shape, rendererIndex, toolTip, url);
+            }
         }
     }
 
-
-    protected double drawLabel(Graphics2D g2, float anchorX, float anchorY, float width, Label label) {
+    protected double drawLabel(Graphics2D g2, float x, float y, float x2, Label label) {
         g2.setPaint(getPaint());
-        double textHeight = TextUtils.drawAlignedString(label.getText(), g2, anchorX, anchorY, TextAnchor.TOP_LEFT).getHeight();
-        double valueHeight = TextUtils.drawAlignedString(label.getValue(), g2, anchorX + width, anchorY, TextAnchor.TOP_RIGHT).getHeight();
+        double textHeight = TextUtils.drawAlignedString(label.getText(), g2, x, y, TextAnchor.TOP_LEFT).getHeight();
+        double valueHeight = TextUtils.drawAlignedString(label.getValue(), g2, x2, y, TextAnchor.TOP_RIGHT).getHeight();
         return Math.max(textHeight, valueHeight);
     }
 
-    protected void drawSeries(Graphics2D g2, float anchorX, float anchorY, float height, int index, Paint paint) {
+    protected void drawSeries(Graphics2D g2, float x, float y, float height, Paint paint) {
         double size = Math.min(height - (getSeriesPadding().getTop() + getSeriesPadding().getBottom()), getSeriesSize());
-        double serialX = anchorX - getSeriesPadding().getRight() - getSeriesSize();
-        double x = serialX + (getSeriesSize() - size) / 2f;
-        double y = anchorY + ((height - size) / 2);
+        double lx = x + (getSeriesSize() - size) / 2f;
+        double ly = y + ((height - size) / 2);
         g2.setPaint(paint);
-        g2.fill(new Ellipse2D.Double(x, y, size, size));
+        g2.fill(new Ellipse2D.Double(lx, ly, size, size));
     }
 
     protected Rectangle2D getBackgroundRectangle(Graphics2D g2, float anchorX, float anchorY) {
         if (labels == null || labels.length == 0) return null;
-        double x, y, textWidth, textHeight, valueWidth;
-        Label firstLabel = labels[labels.length - 1];
-        Rectangle2D textBounds = TextUtils.calcAlignedStringBounds(firstLabel.getText(), g2, anchorX, anchorY, TextAnchor.TOP_LEFT).getBounds2D();
-        Rectangle2D valueBounds = TextUtils.calcAlignedStringBounds(firstLabel.getValue(), g2, anchorX, anchorY, TextAnchor.TOP_LEFT).getBounds2D();
-        x = textBounds.getX();
-        y = textBounds.getY();
-        double maxHeight = Math.max(textBounds.getHeight(), valueBounds.getHeight());
-        textWidth = textBounds.getWidth();
-        textHeight = maxHeight;
-        valueWidth = valueBounds.getWidth();
-        anchorY -= maxHeight;
-        for (int i = labels.length - 2; i >= 0; i--) {
+
+        double textWidth = 0, valueWidth = 0, totalHeight = 0;
+        FontMetrics fm = g2.getFontMetrics();
+        for (int i = 0; i < labels.length; i++) {
             Label label = labels[i];
-            Rectangle2D textB = TextUtils.calcAlignedStringBounds(label.getText(), g2, anchorX, anchorY, TextAnchor.TOP_LEFT).getBounds2D();
-            Rectangle2D valueB = TextUtils.calcAlignedStringBounds(label.getValue(), g2, anchorX, anchorY, TextAnchor.TOP_LEFT).getBounds2D();
-            x = Math.min(x, textB.getX());
-            y = Math.min(y, textB.getY());
-            textWidth = Math.max(textWidth, textB.getWidth());
-            valueWidth = Math.max(valueWidth, valueB.getWidth());
-            double maxH = Math.max(textB.getHeight(), valueB.getHeight());
-            textHeight += maxH + getVerticalTextGap();
-            anchorY -= maxH;
+            Rectangle2D textBounds = TextUtils.getTextBounds(label.getText(), g2, fm);
+            Rectangle2D valueBounds = TextUtils.getTextBounds(label.getValue(), g2, fm);
+            totalHeight += Math.max(textBounds.getHeight(), valueBounds.getHeight());
+            textWidth = Math.max(textWidth, textBounds.getWidth());
+            valueWidth = Math.max(valueWidth, valueBounds.getWidth());
         }
-        double seriesSize = getSeriesSizeWidth();
-        return new Rectangle2D.Double(x - seriesSize, y, textWidth + seriesSize + getGap() + valueWidth, textHeight);
+        if (labels.length > 1) {
+            totalHeight += (getVerticalTextGap() * (labels.length - 1));
+        }
+        totalHeight += getPadding().getTop() + getPadding().getBottom();
+        double totalWidth = textWidth + valueWidth + getSeriesSizeWidth() + getGap() + getPadding().getLeft() + getPadding().getRight();
+        double space = 10;
+        return new Rectangle2D.Double(anchorX - space, anchorY - totalHeight - space, totalWidth, totalHeight);
     }
 
     private double getSeriesSizeWidth() {
