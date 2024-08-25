@@ -17,6 +17,7 @@ import org.jfree.data.xy.XYDataset;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.text.NumberFormat;
@@ -68,6 +69,16 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
     public void setOutlinePaint(Paint paint) {
         Args.nullNotPermitted(paint, "paint");
         this.outlinePaint = paint;
+        fireAnnotationChanged();
+    }
+
+    public Paint getGridlinePaint() {
+        return gridlinePaint;
+    }
+
+    public void setGridlinePaint(Paint paint) {
+        Args.nullNotPermitted(paint, "paint");
+        this.gridlinePaint = paint;
         fireAnnotationChanged();
     }
 
@@ -175,11 +186,12 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
     }
 
     private Font font;
-    private transient Paint paint;
-    private transient Paint backgroundPaint;
+    private Paint paint;
+    private Paint backgroundPaint;
     private boolean outlineVisible;
-    private transient Paint outlinePaint;
-    private transient Stroke outlineStroke;
+    private Paint outlinePaint;
+    private Paint gridlinePaint;
+    private Stroke outlineStroke;
     private double gap;
     private double verticalTextGap;
     private RectangleInsets padding;
@@ -196,6 +208,7 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
         this.font = XYTextAnnotation.DEFAULT_FONT;
         this.backgroundPaint = new Color(255, 255, 255, 200);
         this.outlinePaint = new Color(190, 190, 190);
+        this.gridlinePaint = new Color(25, 104, 148);
         this.outlineVisible = true;
         this.numberFormat = NumberFormat.getNumberInstance();
         this.padding = new RectangleInsets(10, 10, 10, 10);
@@ -272,6 +285,11 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
             Shape shape = round > 0 ?
                     new RoundRectangle2D.Double(bgRec.getX(), bgRec.getY(), bgRec.getWidth(), bgRec.getHeight(), round, round) :
                     bgRec;
+
+            g2.setStroke(plot.getDomainGridlineStroke());
+            g2.setPaint(getGridlinePaint());
+            g2.draw(new Line2D.Double(anchorX, dataArea.getY(), anchorX, dataArea.getY() + dataArea.getHeight()));
+
             if (getBackgroundPaint() != null) {
                 g2.setPaint(getBackgroundPaint());
                 g2.fill(shape);
