@@ -82,6 +82,15 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
         fireAnnotationChanged();
     }
 
+    public Paint getTitleLinePain() {
+        return titleLinePain;
+    }
+
+    public void setTitleLinePain(Paint paint) {
+        this.titleLinePain = paint;
+        fireAnnotationChanged();
+    }
+
     public Stroke getOutlineStroke() {
         return outlineStroke;
     }
@@ -89,6 +98,16 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
     public void setOutlineStroke(Stroke stroke) {
         Args.nullNotPermitted(stroke, "stroke");
         this.outlineStroke = stroke;
+        fireAnnotationChanged();
+    }
+
+    public Stroke getTitleLineStroke() {
+        return titleLineStroke;
+    }
+
+    public void setTitleLineStroke(Stroke stroke) {
+        Args.nullNotPermitted(stroke, "stroke");
+        this.titleLineStroke = stroke;
         fireAnnotationChanged();
     }
 
@@ -185,13 +204,24 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
         fireAnnotationChanged();
     }
 
+    public TitleGenerator getTitleGenerator() {
+        return titleGenerator;
+    }
+
+    public void setTitleGenerator(TitleGenerator titleGenerator) {
+        this.titleGenerator = titleGenerator;
+        fireAnnotationChanged();
+    }
+
     private Font font;
     private Paint paint;
     private Paint backgroundPaint;
     private boolean outlineVisible;
     private Paint outlinePaint;
     private Paint gridlinePaint;
+    private Paint titleLinePain;
     private Stroke outlineStroke;
+    private Stroke titleLineStroke;
     private double gap;
     private double verticalTextGap;
     private RectangleInsets padding;
@@ -202,6 +232,7 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
     private double y;
     private Label[] labels;
     private NumberFormat numberFormat;
+    private TitleGenerator titleGenerator;
 
     public MultiXYTextAnnotation() {
         this.paint = XYTextAnnotation.DEFAULT_PAINT;
@@ -209,11 +240,13 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
         this.backgroundPaint = new Color(255, 255, 255, 200);
         this.outlinePaint = new Color(190, 190, 190);
         this.gridlinePaint = new Color(25, 104, 148);
+        this.titleLinePain = new Color(190, 190, 190);
         this.outlineVisible = true;
         this.numberFormat = NumberFormat.getNumberInstance();
         this.padding = new RectangleInsets(10, 10, 10, 10);
-        this.seriesPadding = new RectangleInsets(3, 2, 3, 10);
+        this.seriesPadding = new RectangleInsets(3, 2, 3, 5);
         this.outlineStroke = new BasicStroke(0.5f);
+        this.titleLineStroke = new BasicStroke(1f);
         this.round = 10;
         this.seriesSize = 10;
         this.gap = 10;
@@ -261,7 +294,8 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
                 anchorY = tempAnchor;
             }
             g2.setFont(getFont());
-            Rectangle2D bgRec = getBackgroundRectangle(g2, anchorX, anchorY);
+            String title = getTitleGenerator() == null ? null : titleGenerator.getTitle(this.x);
+            Rectangle2D bgRec = getBackgroundRectangle(g2, anchorX, anchorY, title);
             // adjust annotation
             if (!dataArea.contains(bgRec)) {
                 int shadow = 5;
@@ -298,6 +332,18 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
             float y = (float) (bgRec.getY() + getPadding().getTop());
             float x2 = (float) (bgRec.getX() + bgRec.getWidth() - getPadding().getRight());
             float seriesX = (float) (bgRec.getX() + getPadding().getLeft());
+
+            // draw title
+            if (title != null) {
+                float titleX = (float) (bgRec.getX() + getPadding().getLeft());
+                y += drawTitle(g2, titleX, y, title);
+                if (getTitleLinePain() != null) {
+                    
+                }
+                y += getVerticalTextGap();
+            }
+
+            // draw label
             for (int i = 0; i < labels.length; i++) {
                 Label label = labels[i];
                 float size = (float) drawLabel(g2, x, y, x2, label);
@@ -317,6 +363,12 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
         }
     }
 
+    protected double drawTitle(Graphics2D g2, float x, float y, String title) {
+        g2.setPaint(getPaint());
+        double textHeight = TextUtils.drawAlignedString(title, g2, x, y, TextAnchor.TOP_LEFT).getHeight();
+        return textHeight;
+    }
+
     protected double drawLabel(Graphics2D g2, float x, float y, float x2, Label label) {
         g2.setPaint(getPaint());
         double textHeight = TextUtils.drawAlignedString(label.getText(), g2, x, y, TextAnchor.TOP_LEFT).getHeight();
@@ -332,10 +384,10 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
         g2.fill(new Ellipse2D.Double(lx, ly, size, size));
     }
 
-    protected Rectangle2D getBackgroundRectangle(Graphics2D g2, float anchorX, float anchorY) {
+    protected Rectangle2D getBackgroundRectangle(Graphics2D g2, float anchorX, float anchorY, String title) {
         if (labels == null || labels.length == 0) return null;
 
-        double textWidth = 0, valueWidth = 0, totalHeight = 0;
+        double textWidth = 0, valueWidth = 0, titleWidth = 0, totalHeight = 0;
         FontMetrics fm = g2.getFontMetrics();
         for (int i = 0; i < labels.length; i++) {
             Label label = labels[i];
@@ -345,17 +397,37 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
             textWidth = Math.max(textWidth, textBounds.getWidth());
             valueWidth = Math.max(valueWidth, valueBounds.getWidth());
         }
+        if (title != null) {
+            Rectangle2D titleBounds = TextUtils.getTextBounds(title, g2, fm);
+            titleWidth = titleBounds.getWidth();
+            totalHeight += titleBounds.getHeight();
+            totalHeight += getVerticalTextGap();
+            if (getTitleLinePain() != null) {
+                totalHeight += getTitleLineStrokeWidth();
+            }
+        }
         if (labels.length > 1) {
             totalHeight += (getVerticalTextGap() * (labels.length - 1));
         }
         totalHeight += getPadding().getTop() + getPadding().getBottom();
-        double totalWidth = textWidth + valueWidth + getSeriesSizeWidth() + getGap() + getPadding().getLeft() + getPadding().getRight();
+
+        double totalLabelWidth = textWidth + valueWidth + getSeriesSizeWidth() + getGap();
+        double totalWidth = Math.max(totalLabelWidth, titleWidth) + getPadding().getLeft() + getPadding().getRight();
         double space = 10;
         return new Rectangle2D.Double(anchorX - space, anchorY - totalHeight - space, totalWidth, totalHeight);
     }
 
     private double getSeriesSizeWidth() {
         return getSeriesSize() + getSeriesPadding().getLeft() + getSeriesPadding().getRight();
+    }
+
+    private float getTitleLineStrokeWidth() {
+        Stroke stroke = getTitleLineStroke();
+        if (stroke instanceof BasicStroke) {
+            float lineSize = ((BasicStroke) stroke).getLineWidth();
+            return lineSize;
+        }
+        return 0;
     }
 
     public static class Label {
@@ -383,5 +455,9 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
 
         private String text;
         private String value;
+    }
+
+    public interface TitleGenerator {
+        String getTitle(double xValue);
     }
 }

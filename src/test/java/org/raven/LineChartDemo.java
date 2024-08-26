@@ -24,6 +24,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class LineChartDemo extends DemoFrame {
 
@@ -98,12 +101,15 @@ public class LineChartDemo extends DemoFrame {
         XYPlot plot = (XYPlot) chartPanel.getChart().getPlot();
         MultiXYTextAnnotation annotation = new MultiXYTextAnnotation();
 
+        DateFormat titleFormat = new SimpleDateFormat("dd-MMMM-yyyy");
+
         Color foreground = UIManager.getColor("Label.foreground");
         FlatColorPaint border = new FlatColorPaint("Component.borderColor");
         Font font = UIManager.getFont("Label.font");
         annotation.setPaint(foreground);
         annotation.setFont(font);
         annotation.setOutlinePaint(border);
+        annotation.setTitleGenerator(xValue -> titleFormat.format(new Date((long) xValue)));
 
         plot.addAnnotation(annotation);
         chartPanel.addChartMouseListener(new ChartMouseListener() {
