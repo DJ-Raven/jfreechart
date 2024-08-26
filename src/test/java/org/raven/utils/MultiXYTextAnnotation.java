@@ -82,6 +82,26 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
         fireAnnotationChanged();
     }
 
+    public Paint getTitlePaint() {
+        return titlePaint;
+    }
+
+    public void setTitlePaint(Paint paint) {
+        Args.nullNotPermitted(paint, "paint");
+        this.titlePaint = paint;
+        fireAnnotationChanged();
+    }
+
+    public Paint getValuePaint() {
+        return valuePaint;
+    }
+
+    public void setValuePaint(Paint paint) {
+        Args.nullNotPermitted(paint, "paint");
+        this.valuePaint = paint;
+        fireAnnotationChanged();
+    }
+
     public Paint getTitleLinePain() {
         return titleLinePain;
     }
@@ -149,6 +169,26 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
         fireAnnotationChanged();
     }
 
+    public RectangleInsets getTitlePadding() {
+        return titlePadding;
+    }
+
+    public void setTitlePadding(RectangleInsets padding) {
+        Args.nullNotPermitted(padding, "padding");
+        this.titlePadding = padding;
+        fireAnnotationChanged();
+    }
+
+    public RectangleInsets getTitleLinePadding() {
+        return titleLinePadding;
+    }
+
+    public void setTitleLinePadding(RectangleInsets padding) {
+        Args.nullNotPermitted(padding, "padding");
+        this.titleLinePadding = padding;
+        fireAnnotationChanged();
+    }
+
     public double getRound() {
         return round;
     }
@@ -190,8 +230,10 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
     }
 
     public void setLabels(Label[] labels) {
-        this.labels = labels;
-        fireAnnotationChanged();
+        if (this.labels != labels) {
+            this.labels = labels;
+            fireAnnotationChanged();
+        }
     }
 
     public NumberFormat getNumberFormat() {
@@ -213,12 +255,22 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
         fireAnnotationChanged();
     }
 
+    public void setDefaultPaint(Paint paint) {
+        Args.nullNotPermitted(paint, "paint");
+        this.paint = paint;
+        this.titlePaint = paint;
+        this.valuePaint = paint;
+        fireAnnotationChanged();
+    }
+
     private Font font;
     private Paint paint;
     private Paint backgroundPaint;
     private boolean outlineVisible;
     private Paint outlinePaint;
     private Paint gridlinePaint;
+    private Paint titlePaint;
+    private Paint valuePaint;
     private Paint titleLinePain;
     private Stroke outlineStroke;
     private Stroke titleLineStroke;
@@ -226,6 +278,8 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
     private double verticalTextGap;
     private RectangleInsets padding;
     private RectangleInsets seriesPadding;
+    private RectangleInsets titlePadding;
+    private RectangleInsets titleLinePadding;
     private double round;
     private double seriesSize;
     private double x;
@@ -240,13 +294,17 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
         this.backgroundPaint = new Color(255, 255, 255, 200);
         this.outlinePaint = new Color(190, 190, 190);
         this.gridlinePaint = new Color(25, 104, 148);
+        this.titlePaint = XYTextAnnotation.DEFAULT_PAINT;
+        this.valuePaint = XYTextAnnotation.DEFAULT_PAINT;
         this.titleLinePain = new Color(190, 190, 190);
         this.outlineVisible = true;
         this.numberFormat = NumberFormat.getNumberInstance();
         this.padding = new RectangleInsets(10, 10, 10, 10);
         this.seriesPadding = new RectangleInsets(3, 2, 3, 5);
+        this.titlePadding = new RectangleInsets(0, 0, 8, 0);
+        this.titleLinePadding = new RectangleInsets(0, 0, 8, 0);
         this.outlineStroke = new BasicStroke(0.5f);
-        this.titleLineStroke = new BasicStroke(1f);
+        this.titleLineStroke = new BasicStroke(0.5f);
         this.round = 10;
         this.seriesSize = 10;
         this.gap = 10;
@@ -254,7 +312,7 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
     }
 
     public void autoCalculateX(double x, XYDataset dataset) {
-        if (this.x != x) {
+        if (this.x != x || labels == null) {
             this.x = x;
             createValues(dataset);
         }
@@ -296,23 +354,25 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
             g2.setFont(getFont());
             String title = getTitleGenerator() == null ? null : titleGenerator.getTitle(this.x);
             Rectangle2D bgRec = getBackgroundRectangle(g2, anchorX, anchorY, title);
+
             // adjust annotation
-            if (!dataArea.contains(bgRec)) {
-                int shadow = 5;
-                int space = 2;
+            int shadow = 5;
+            int space = 2;
+            Rectangle2D rec = new RectangleInsets(space, space, space + shadow, space + shadow).createInsetRectangle(dataArea);
+            if (!rec.contains(bgRec)) {
                 double x = bgRec.getX();
                 double y = bgRec.getY();
                 double width = bgRec.getWidth();
                 double height = bgRec.getHeight();
-                if (x < dataArea.getX() + space) {
-                    x = dataArea.getX() + space;
-                } else if (x + width > dataArea.getX() + dataArea.getWidth() - shadow) {
-                    x = dataArea.getX() + dataArea.getWidth() - width - shadow;
+                if (x < rec.getX()) {
+                    x = rec.getX();
+                } else if (x + width > rec.getX() + rec.getWidth()) {
+                    x = rec.getX() + rec.getWidth() - width;
                 }
-                if (y < dataArea.getY() + space) {
-                    y = dataArea.getY() + space;
-                } else if (y + height > dataArea.getY() + dataArea.getHeight() - shadow) {
-                    y = dataArea.getY() + dataArea.getHeight() - height - shadow;
+                if (y < rec.getY()) {
+                    y = rec.getY();
+                } else if (y + height > rec.getY() + rec.getHeight()) {
+                    y = rec.getY() + rec.getHeight() - height;
                 }
                 bgRec = new Rectangle2D.Double(x, y, width, height);
             }
@@ -335,12 +395,20 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
 
             // draw title
             if (title != null) {
-                float titleX = (float) (bgRec.getX() + getPadding().getLeft());
+                y += getTitlePadding().getTop();
+                float titleX = (float) (bgRec.getX() + getPadding().getLeft() + getTitlePadding().getLeft());
                 y += drawTitle(g2, titleX, y, title);
+                y += getTitlePadding().getBottom();
                 if (getTitleLinePain() != null) {
-                    
+                    float titleLineWidth = getTitleLineStrokeWidth();
+                    g2.setStroke(getTitleLineStroke());
+                    g2.setPaint(getTitleLinePain());
+                    double lineWidth = bgRec.getWidth() - getTitleLinePadding().getLeft() - getTitleLinePadding().getRight();
+                    double lineX = bgRec.getX() + getTitleLinePadding().getLeft();
+                    y += getTitleLinePadding().getTop();
+                    g2.draw(new Line2D.Double(lineX, y + titleLineWidth / 2f, lineX + lineWidth, y + titleLineWidth / 2f));
+                    y += titleLineWidth + getTitleLinePadding().getBottom();
                 }
-                y += getVerticalTextGap();
             }
 
             // draw label
@@ -364,7 +432,7 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
     }
 
     protected double drawTitle(Graphics2D g2, float x, float y, String title) {
-        g2.setPaint(getPaint());
+        g2.setPaint(getTitlePaint());
         double textHeight = TextUtils.drawAlignedString(title, g2, x, y, TextAnchor.TOP_LEFT).getHeight();
         return textHeight;
     }
@@ -372,6 +440,7 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
     protected double drawLabel(Graphics2D g2, float x, float y, float x2, Label label) {
         g2.setPaint(getPaint());
         double textHeight = TextUtils.drawAlignedString(label.getText(), g2, x, y, TextAnchor.TOP_LEFT).getHeight();
+        g2.setPaint(getValuePaint());
         double valueHeight = TextUtils.drawAlignedString(label.getValue(), g2, x2, y, TextAnchor.TOP_RIGHT).getHeight();
         return Math.max(textHeight, valueHeight);
     }
@@ -387,7 +456,7 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
     protected Rectangle2D getBackgroundRectangle(Graphics2D g2, float anchorX, float anchorY, String title) {
         if (labels == null || labels.length == 0) return null;
 
-        double textWidth = 0, valueWidth = 0, titleWidth = 0, totalHeight = 0;
+        double textWidth = 0, valueWidth = 0, titleWidth = 0, minLineWidth = 0, totalHeight = 0;
         FontMetrics fm = g2.getFontMetrics();
         for (int i = 0; i < labels.length; i++) {
             Label label = labels[i];
@@ -399,11 +468,12 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
         }
         if (title != null) {
             Rectangle2D titleBounds = TextUtils.getTextBounds(title, g2, fm);
-            titleWidth = titleBounds.getWidth();
+            titleWidth = titleBounds.getWidth() + getTitlePadding().getLeft() + getTitlePadding().getRight();
             totalHeight += titleBounds.getHeight();
-            totalHeight += getVerticalTextGap();
+            totalHeight += getTitlePadding().getTop() + getTitlePadding().getBottom();
             if (getTitleLinePain() != null) {
-                totalHeight += getTitleLineStrokeWidth();
+                totalHeight += getTitleLineStrokeWidth() + getTitleLinePadding().getTop() + getTitleLinePadding().getBottom();
+                minLineWidth = getTitleLinePadding().getLeft() + getTitleLinePadding().getRight();
             }
         }
         if (labels.length > 1) {
@@ -412,7 +482,7 @@ public class MultiXYTextAnnotation extends AbstractXYAnnotation {
         totalHeight += getPadding().getTop() + getPadding().getBottom();
 
         double totalLabelWidth = textWidth + valueWidth + getSeriesSizeWidth() + getGap();
-        double totalWidth = Math.max(totalLabelWidth, titleWidth) + getPadding().getLeft() + getPadding().getRight();
+        double totalWidth = Math.max(totalLabelWidth, Math.max(titleWidth, minLineWidth)) + getPadding().getLeft() + getPadding().getRight();
         double space = 10;
         return new Rectangle2D.Double(anchorX - space, anchorY - totalHeight - space, totalWidth, totalHeight);
     }

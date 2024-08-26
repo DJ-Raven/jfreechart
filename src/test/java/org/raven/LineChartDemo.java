@@ -1,5 +1,6 @@
 package org.raven;
 
+import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 import net.miginfocom.swing.MigLayout;
@@ -31,7 +32,7 @@ import java.util.Date;
 public class LineChartDemo extends DemoFrame {
 
     public LineChartDemo() {
-        setLayout(new MigLayout("al center center"));
+        setLayout(new MigLayout("insets 20,al center center"));
         setSize(new Dimension(800, 400));
         add(createChartPanel());
     }
@@ -48,11 +49,11 @@ public class LineChartDemo extends DemoFrame {
 
         NumberAxis range = (NumberAxis) plot.getRangeAxis();
         DateAxis domain = (DateAxis) plot.getDomainAxis();
-        range.setLowerMargin(0.15);
         range.setAxisLineVisible(false);
         range.setTickMarksVisible(false);
+        range.setUpperMargin(0.2);
+        range.setLowerMargin(0.1);
 
-        domain.setUpperMargin(0.1);
         domain.setAxisLineVisible(false);
         domain.setTickMarksVisible(false);
 
@@ -90,10 +91,12 @@ public class LineChartDemo extends DemoFrame {
     private JPanel createChartPanel() {
         JFreeChart chart = createChart(SampleData.createTimeSeriesDataset());
         ChartPanel chartPanel = new ChartPanel(chart, false);
-        chartPanel.setFillZoomRectangle(true);
+        chartPanel.setFillZoomRectangle(false);
         chartPanel.setMouseWheelEnabled(true);
         chartPanel.setRangeZoomable(false);
         createAnnotation(chartPanel);
+        chartPanel.putClientProperty(FlatClientProperties.STYLE, "" +
+                "border:15,5,5,5,$Component.borderColor,1,20");
         return chartPanel;
     }
 
@@ -102,13 +105,15 @@ public class LineChartDemo extends DemoFrame {
         MultiXYTextAnnotation annotation = new MultiXYTextAnnotation();
 
         DateFormat titleFormat = new SimpleDateFormat("dd-MMMM-yyyy");
-
-        Color foreground = UIManager.getColor("Label.foreground");
+        FlatColorPaint background = new FlatColorPaint("Panel.background");
+        FlatColorPaint foreground = new FlatColorPaint("Label.foreground");
         FlatColorPaint border = new FlatColorPaint("Component.borderColor");
         Font font = UIManager.getFont("Label.font");
-        annotation.setPaint(foreground);
+        annotation.setBackgroundPaint(background);
+        annotation.setDefaultPaint(foreground);
         annotation.setFont(font);
         annotation.setOutlinePaint(border);
+        annotation.setTitleLinePain(border);
         annotation.setTitleGenerator(xValue -> titleFormat.format(new Date((long) xValue)));
 
         plot.addAnnotation(annotation);
@@ -121,6 +126,7 @@ public class LineChartDemo extends DemoFrame {
             public void chartMouseMoved(ChartMouseEvent event) {
                 Rectangle2D dataArea = chartPanel.getScreenDataArea();
                 if (!dataArea.contains(event.getTrigger().getPoint())) {
+                    annotation.setLabels(null);
                     return;
                 }
                 double x = plot.getDomainAxis().java2DToValue(event.getTrigger().getX(), dataArea, plot.getDomainAxisEdge());
@@ -139,7 +145,6 @@ public class LineChartDemo extends DemoFrame {
                             minDistance = distance;
                             closestX = dataX;
                             found = true;
-
                         }
                     }
                 }
@@ -153,7 +158,6 @@ public class LineChartDemo extends DemoFrame {
     public static void main(String[] args) {
         FlatRobotoFont.install();
         FlatIntelliJLaf.setup();
-        UIManager.put("Label.foreground", Color.decode("#646464"));
         UIManager.put("defaultFont", new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 13));
         EventQueue.invokeLater(() -> new LineChartDemo().setVisible(true));
     }
